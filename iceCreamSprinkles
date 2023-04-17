@@ -1,0 +1,93 @@
+let sprinkles = []; 
+let iceCream; 
+
+function setup() {
+  createCanvas(400, 500); 
+  iceCream = new IceCream(width / 2, height - 10); 
+
+  // add mouse event to generate sprinkles at mouse position
+  document.querySelector('canvas').addEventListener('mousemove', (event) => {
+    if (event.buttons == 1) { // only generate sprinkles when left mouse button is down
+      let newSprinkle = new Sprinkle(event.clientX, event.clientY);
+      sprinkles.push(newSprinkle);
+    }
+  });
+}
+
+function draw() {
+  background(200, 200, 255);
+  iceCream.display(); // display ice cream bowl
+
+  // update and display all sprinkles
+  for (let i = sprinkles.length - 1; i >= 0; i--) {
+    sprinkles[i].update();
+    sprinkles[i].display();
+
+    // check for collision with ice cream
+    if (sprinkles[i].collide(iceCream)) {
+      sprinkles.splice(i, 1); // remove the sprinkle from the array
+      iceCream.addSprinkle(); // add sprinkle to the ice cream bowl
+
+    }
+  }
+}
+
+// sprinkle class
+class Sprinkle {
+  constructor(x, y) {
+    this.position = new p5.Vector(x, y);
+    this.velocity = createVector(random(-1, 1), random(2, 4));
+    this.color = color(random(255), random(255), random(255));
+    this.size = random(3, 6);
+  }
+
+  // update position based on velocity
+  update() {
+    this.position.add(this.velocity);
+  }
+  
+
+  // display sprinkle as a circle
+  display() {
+    noStroke();
+    fill(this.color);
+    ellipse(this.position.x, this.position.y, this.size);
+  }
+
+  // check for collision with ice cream
+  collide(iceCream) {
+    let d = dist(this.position.x, this.position.y, iceCream.position.x-10, iceCream.position.y);
+    return d < iceCream.size / 2;
+  }
+}
+
+// ice cream class
+class IceCream {
+  constructor(x, y) {
+    this.position = createVector(x, y);
+    this.color = color(255, 204, 0);
+    this.size = 450;
+    this.sprinkles = []; // array to hold all the sprinkles on the ice cream
+  }
+
+  // display sitting sprinkles
+  display() {
+    noStroke();
+    fill(this.color);
+    ellipse(this.position.x, this.position.y, this.size);
+
+    for (let i = 0; i < this.sprinkles.length; i++) {
+      this.sprinkles[i].display();
+    }
+  }
+
+  // add a new sprinkle to the ice cream
+  addSprinkle() {
+    let newSprinkle = new Sprinkle(
+      random(this.position.x - this.size / 2, this.position.x + this.size / 2),
+      random(this.position.y - this.size / 2, this.position.y + this.size / 2)
+    );
+    this.sprinkles.push(newSprinkle);
+  }
+
+}
